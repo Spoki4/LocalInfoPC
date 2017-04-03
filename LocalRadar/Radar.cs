@@ -86,7 +86,7 @@ namespace LocalRadar
             scanningThread.Start();
         }
 
-        public void Stop() { scanningThread.Abort(); scanningThread.Join(500); }
+        public void Stop() { scanningThread.Abort(); }
 
         private async void Scanning()
         {
@@ -102,16 +102,26 @@ namespace LocalRadar
                 }
             }
 
-            Ping ping = new Ping();
-
-            foreach (var ip in range.GetIPRange())
+            PingCompletedEventHandler foundHandler = (object sender, PingCompletedEventArgs args) =>
             {
-                PingReply reply = await ping.SendPingAsync(ip, 100);
-                if (reply != null && reply.Status == IPStatus.Success)
-                    Console.WriteLine(reply.Address);
-            }
+                if(args.Reply != null && args.Reply.Status == IPStatus.Success)
+                {
+                    Console.WriteLine("IP {0} found in local network", args.Reply.Address);
+                    (args.UserState as Action<IPAddress>)(args.Reply.Address);
+                }
+            };
 
-            Console.WriteLine("End");
+            while (true)
+            {
+                foreach (var ip in range.GetIPRange())
+                {
+                    Ping ping = new Ping();
+                    ping.PingCompleted += foundHandler;
+                    ping.SendAsync(ip, 300, findCallback);
+                }
+
+                Thread.Sleep(10000);
+            }
         }
     }
 
