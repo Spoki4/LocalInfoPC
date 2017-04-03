@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalInfoPC", "LocalInfoPC\LocalInfoPC.csproj", "{546076E5-C774-49C3-931F-C8BC73236501}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interface", "WpfApp1\Interface.csproj", "{D9C2EA1B-731D-4E02-9341-548EDC797602}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalRadar", "LocalRadar\LocalRadar.csproj", "{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{546076E5-C774-49C3-931F-C8BC73236501}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{546076E5-C774-49C3-931F-C8BC73236501}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{546076E5-C774-49C3-931F-C8BC73236501}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{546076E5-C774-49C3-931F-C8BC73236501}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9C2EA1B-731D-4E02-9341-548EDC797602}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9C2EA1B-731D-4E02-9341-548EDC797602}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9C2EA1B-731D-4E02-9341-548EDC797602}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9C2EA1B-731D-4E02-9341-548EDC797602}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
