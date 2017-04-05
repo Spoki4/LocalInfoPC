@@ -15,6 +15,8 @@ namespace ConsoleApp
 {
     class Program
     {
+        byte[] HelloHeader = { 0x11, 0x22, 0x33, 0x44, 0x55 };
+
         static void Main(string[] args)
         {
             bool isClientMode = true;
@@ -44,36 +46,38 @@ namespace ConsoleApp
 
         public void workAsClient()
         {
+            TcpClient listener = new TcpClient(new IPEndPoint(IPAddress.Any, 3210));
+
+            Console.WriteLine("Waiting for a server found this client...");
+
             Info info = new Info();
-            TcpListener listener = new TcpListener(IPAddress.Any, 3210);
-            listener.Start();
-            while (true)
-            {
-                Console.WriteLine("Waiting for a server found this client...");
-                TcpClient server = listener.AcceptTcpClient();
-
-                while (true)
+            var radar = new LocalRadar.RadarBuilder()
+                .SetRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.255.255"))
+                .SetPort(3210)
+                .SetFrequency(15000)
+                .SetFindCallback((IPAddress address, LocalRadar.Radar r) =>
                 {
-                    var computerInfo = info.getAllInfo();
-                    IFormatter formatter = new BinaryFormatter();
-                    Stream stream = new MemoryStream();
-
-
-                    formatter.Serialize(stream, computerInfo);
-                    byte[] buffer = ((MemoryStream)stream).ToArray();
-
-                    int bytesSent = server.Client.Send(buffer);
-
-                    if (bytesSent == 0)
+                    try { 
+                        listener.Connect(address, 3211);
+                    } catch(Exception e)
                     {
-                        Console.WriteLine("Disconnected from a server.");
-                        server.Close();
-                        break;
+                        Console.WriteLine(e);
+                        return;
                     }
 
-                    Thread.Sleep(5000);
-                }
-            }
+                    byte[] helloMsg = new byte[5];
+
+                    listener.GetStream().Read(helloMsg, 0, 5);
+
+                    if (!helloMsg.SequenceEqual(HelloHeader))
+                        Console.WriteLine("Ip not work");
+
+                    r.Stop();
+                    Console.WriteLine("IP IS SERVER");
+                })
+                .Build();
+
+            radar.Scan();
         }
 
         private class ObservableList<T> : List<T>
@@ -94,38 +98,28 @@ namespace ConsoleApp
         public void workAsServer()
         {
             clients = new ObservableList<IPAddress>();
+            
+            TcpListener server = new TcpListener(new IPEndPoint(IPAddress.Any, 3211));
+            server.Start();
+            server.BeginAcceptTcpClient((IAsyncResult ar) =>
+            {
+                TcpListener listener = (TcpListener)ar.AsyncState;
+                TcpClient client = listener.EndAcceptTcpClient(ar);
 
-            var radar = new LocalRadar.RadarBuilder()
-                .SetRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.255.255"))
-                .SetPort(3210)
-                .SetFrequency(15000)
-                .SetFindCallback((IPAddress address) =>
-                {
-                    if(!clients.Contains(address))
-                        clients.Add(address);
-                })
-                .Build();
+                client.Client.Send(HelloHeader);
+                Console.WriteLine("client accepted");
+            }, server);
+
 
             clients.setAddCallback((IPAddress address) =>
             {
-                try { 
-                    TcpClient client = new TcpClient(new IPEndPoint(address, 3210));
-                    byte[] receiveBuffer = new byte[1024];
-                    while(true) { 
-                        NetworkStream stream = client.GetStream();
-                        Int32 receiveBytes = stream.Read(receiveBuffer, 0, 1024);
-
-                        Console.WriteLine(receiveBytes);
-                        Console.WriteLine(receiveBuffer);
-                    }
-                } catch(Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                server.Server.SendToAsync(new SocketAsyncEventArgs() { });
             });
 
-            radar.Scan();
-            
+            while(true)
+            {
+                Thread.Sleep(10000);
+            }
         }
     }
 }

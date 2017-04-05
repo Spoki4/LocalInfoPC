@@ -23,7 +23,7 @@ namespace LocalRadar
             return this;
         }
 
-        public RadarBuilder SetFindCallback(Action<IPAddress> callback)
+        public RadarBuilder SetFindCallback(Action<IPAddress, Radar> callback)
         {
             radar.SetFindCallback(callback);
             return this;

@@ -16,14 +16,14 @@ namespace LocalRadar
         private Thread scanningThread;
         private volatile bool threadRunning;
 
-        private Action<IPAddress> findCallback; 
+        private Action<IPAddress, Radar> findCallback; 
         private Action endCallback;
 
         private int frequencyTime = 5000;
 
         internal void SetRange(IPRange range) { this.range = range; }
         internal void SetPort(int port) { this.port = port; }
-        internal void SetFindCallback(Action<IPAddress> callback) { findCallback = callback; }
+        internal void SetFindCallback(Action<IPAddress, Radar> callback) { findCallback = callback; }
         internal void SetEndCallback(Action callback) { endCallback = callback; }
         internal void SetFrenquency(int millis) { frequencyTime = millis; }
 
@@ -55,7 +55,7 @@ namespace LocalRadar
                 if(args.Reply != null && args.Reply.Status == IPStatus.Success)
                 {
                     Console.WriteLine("IP {0} found in local network", args.Reply.Address);
-                    (args.UserState as Action<IPAddress>)(args.Reply.Address);
+                    (args.UserState as Action<IPAddress, Radar>)(args.Reply.Address, this);
                 }
             };
 
