@@ -8,87 +8,35 @@ using System.Threading;
 
 namespace LocalRadar
 {
-    public class IPRange
-    {
-        IPAddress start;
-        IPAddress end;
-
-        public IPRange(IPAddress start, IPAddress end)
-        {
-            this.start = start;
-            this.end = end;
-        }
-
-        public IEnumerable<IPAddress> GetIPRange()
-        {
-            uint sIP = ipToUint(start.GetAddressBytes());
-            uint eIP = ipToUint(end.GetAddressBytes());
-            while (sIP <= eIP)
-            {
-                yield return new IPAddress(reverseBytesArray(sIP));
-                sIP++;
-            }
-        }
-        protected uint reverseBytesArray(uint ip)
-        {
-            byte[] bytes = BitConverter.GetBytes(ip);
-            Array.Reverse(bytes);
-            return (uint)BitConverter.ToInt32(bytes, 0);
-        }
-
-
-        /* Convert bytes array to 32 bit long value */
-        protected uint ipToUint(byte[] ipBytes)
-        {
-            ByteConverter bConvert = new ByteConverter();
-            uint ipUint = 0;
-
-            int shift = 24; // indicates number of bits left for shifting
-            foreach (byte b in ipBytes)
-            {
-                if (ipUint == 0)
-                {
-                    ipUint = (uint)bConvert.ConvertTo(b, typeof(uint)) << shift;
-                    shift -= 8;
-                    continue;
-                }
-
-                if (shift >= 8)
-                    ipUint += (uint)bConvert.ConvertTo(b, typeof(uint)) << shift;
-                else
-                    ipUint += (uint)bConvert.ConvertTo(b, typeof(uint));
-
-                shift -= 8;
-            }
-
-            return ipUint;
-        }
-    }
-
     public class Radar
     {
         private IPRange range;
         private int port;
 
         private Thread scanningThread;
+        private volatile bool threadRunning;
 
         private Action<IPAddress> findCallback; 
         private Action endCallback;
+
+        private int frequencyTime = 5000;
 
         internal void SetRange(IPRange range) { this.range = range; }
         internal void SetPort(int port) { this.port = port; }
         internal void SetFindCallback(Action<IPAddress> callback) { findCallback = callback; }
         internal void SetEndCallback(Action callback) { endCallback = callback; }
+        internal void SetFrenquency(int millis) { frequencyTime = millis; }
 
         public void Scan()
         {
+            threadRunning = true;
             scanningThread = new Thread(Scanning);
             scanningThread.Start();
         }
 
-        public void Stop() { scanningThread.Abort(); }
+        public void Stop() { threadRunning = false; }
 
-        private async void Scanning()
+        private void Scanning()
         {
             IPEndPoint localIp = null;
 
@@ -111,47 +59,21 @@ namespace LocalRadar
                 }
             };
 
-            while (true)
+            while (threadRunning)
             {
                 foreach (var ip in range.GetIPRange())
                 {
+                    if (!threadRunning)
+                        return;
                     Ping ping = new Ping();
                     ping.PingCompleted += foundHandler;
                     ping.SendAsync(ip, 300, findCallback);
                 }
 
-                Thread.Sleep(10000);
+                Thread.Sleep(frequencyTime);
             }
         }
     }
 
-    public class RadarBuilder
-    {
-        private Radar radar = new Radar();
-
-        public RadarBuilder SetRange(IPAddress start, IPAddress end)
-        {
-            radar.SetRange(new IPRange(start, end));
-            return this;
-        }
-
-        public RadarBuilder SetPort(int port) {
-            radar.SetPort(port);
-            return this;
-        }
-
-        public RadarBuilder SetFindCallback(Action<IPAddress> callback)
-        {
-            radar.SetFindCallback(callback);
-            return this;
-        }
-
-        public RadarBuilder SetEndCallback(Action callback)
-        {
-            radar.SetEndCallback(callback);
-            return this;
-        }
-
-        public Radar Build() { return radar; }
-    }
+    
 }
