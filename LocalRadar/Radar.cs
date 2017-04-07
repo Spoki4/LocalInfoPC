@@ -50,14 +50,16 @@ namespace LocalRadar
                 }
             }
 
-            PingCompletedEventHandler foundHandler = (object sender, PingCompletedEventArgs args) =>
+            AsyncCallback foundHandler = (IAsyncResult args) =>
             {
-                if(args.Reply != null && args.Reply.Status == IPStatus.Success)
-                {
-                    Console.WriteLine("IP {0} found in local network", args.Reply.Address);
-                    (args.UserState as Action<IPAddress, Radar>)(args.Reply.Address, this);
-                }
+                var client = args.AsyncState as TcpClient;
+                client.EndConnect(args);
+
+                Console.WriteLine("Good {0}",client.Client.RemoteEndPoint.ToString());
+           
             };
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, false);
 
             while (threadRunning)
             {
@@ -65,9 +67,16 @@ namespace LocalRadar
                 {
                     if (!threadRunning)
                         return;
-                    Ping ping = new Ping();
-                    ping.PingCompleted += foundHandler;
-                    ping.SendAsync(ip, 300, findCallback);
+                    try {
+                        IAsyncResult result = socket.BeginConnect(ip, port, null, null);
+                        bool success = result.AsyncWaitHandle.WaitOne(200, true);
+                        if (socket.Connected)
+                            Console.WriteLine("ip {0} good", ip);
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                 }
 
                 Thread.Sleep(frequencyTime);

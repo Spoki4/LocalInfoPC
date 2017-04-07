@@ -53,7 +53,7 @@ namespace ConsoleApp
             Info info = new Info();
             var radar = new LocalRadar.RadarBuilder()
                 .SetRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.255.255"))
-                .SetPort(3210)
+                .SetPort(3211)
                 .SetFrequency(15000)
                 .SetFindCallback((IPAddress address, LocalRadar.Radar r) =>
                 {
