@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,7 +24,7 @@ namespace LocalRadar
             return this;
         }
 
-        public RadarBuilder SetFindCallback(Action<IPAddress, Radar> callback)
+        public RadarBuilder SetFindCallback(Action<TcpClient> callback)
         {
             radar.SetFindCallback(callback);
             return this;

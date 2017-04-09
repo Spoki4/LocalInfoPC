@@ -1,15 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.12
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalRadar", "LocalRadar\LocalRadar.csproj", "{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{50A23700-6502-4BD4-9A01-3C8D227DA5EA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCInfo", "PCInfo\PCInfo.csproj", "{C9D03E3A-D707-4268-AE1E-E61D468A528E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{0DB8CF12-1A92-4607-916D-5926E073AF65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{E22EE401-19A2-4C71-BE07-F4B705BED6F0}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NetworkConstants", "NetworkConstants\NetworkConstants.shproj", "{CE468C4F-9521-4865-ADFB-0ED461E9EE56}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		NetworkConstants\NetworkConstants.projitems*{0db8cf12-1a92-4607-916d-5926e073af65}*SharedItemsImports = 4
+		NetworkConstants\NetworkConstants.projitems*{2dd28d82-bb01-4eea-bbaa-754852e75f9f}*SharedItemsImports = 4
+		NetworkConstants\NetworkConstants.projitems*{ce468c4f-9521-4865-adfb-0ed461e9ee56}*SharedItemsImports = 13
+		NetworkConstants\NetworkConstants.projitems*{e22ee401-19a2-4c71-be07-f4b705bed6f0}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -19,14 +29,18 @@ Global
 		{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DD28D82-BB01-4EEA-BBAA-754852E75F9F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{50A23700-6502-4BD4-9A01-3C8D227DA5EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{50A23700-6502-4BD4-9A01-3C8D227DA5EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{50A23700-6502-4BD4-9A01-3C8D227DA5EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{50A23700-6502-4BD4-9A01-3C8D227DA5EA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9D03E3A-D707-4268-AE1E-E61D468A528E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9D03E3A-D707-4268-AE1E-E61D468A528E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9D03E3A-D707-4268-AE1E-E61D468A528E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9D03E3A-D707-4268-AE1E-E61D468A528E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DB8CF12-1A92-4607-916D-5926E073AF65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DB8CF12-1A92-4607-916D-5926E073AF65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DB8CF12-1A92-4607-916D-5926E073AF65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DB8CF12-1A92-4607-916D-5926E073AF65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E22EE401-19A2-4C71-BE07-F4B705BED6F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E22EE401-19A2-4C71-BE07-F4B705BED6F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E22EE401-19A2-4C71-BE07-F4B705BED6F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E22EE401-19A2-4C71-BE07-F4B705BED6F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
