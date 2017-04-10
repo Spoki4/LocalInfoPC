@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -22,10 +23,23 @@ namespace Server
     public partial class MainWindow : Window
     {
         Computers computers = new Computers();
+        Timer refreshDataTimer = new Timer(1000);
 
         public MainWindow()
         {
-            InitializeComponent();    
+            InitializeComponent();
+            refreshDataTimer.Elapsed += refreshData;
+            refreshDataTimer.AutoReset = true;
+            refreshDataTimer.Start();
+            DataContext = computers;
+        }
+
+        private void refreshData(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.BeginInvoke((Action)delegate ()
+            {
+                listView.ItemsSource = computers.getInfo();
+            });            
         }
     }
 }

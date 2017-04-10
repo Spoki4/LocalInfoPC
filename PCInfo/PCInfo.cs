@@ -44,12 +44,24 @@ namespace PCInfo
             return null;
         }
 
+        public long getRAMSize()
+        {
+            return (long)new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory;
+        }
+
+        public string getMachineName()
+        {
+            return System.Environment.MachineName;
+        }
+
         public ComputerInfo getAllInfo()
         {
             var info = new ComputerInfo();
             info.processorName = GetProcessorName();
             info.videoCardName = getVideoCardName();
             info.OSName = getSystemName();
+            info.ramSize = getRAMSize();
+            info.computerName = getMachineName();
 
             return info; 
         }

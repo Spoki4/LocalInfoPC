@@ -1,7 +1,9 @@
 ﻿using NetworkConstants;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 
@@ -70,6 +72,7 @@ namespace Client
                 stream.Read(buffer, 0, buffer.Length);
 
                 string command = Encoding.ASCII.GetString(buffer);
+                command = command.TrimEnd('\0');
                 Console.WriteLine(command);
 
                 if(command.Equals(Constants.NETWORK_PING))
@@ -77,8 +80,24 @@ namespace Client
                     var pingBytes = Encoding.ASCII.GetBytes(Constants.NETWORK_PING);
                     stream.Write(pingBytes, 0, pingBytes.Length);
                 }
+                else if (command.Equals(Constants.NETWORK_STATS))
+                {
+                    var info = new PCInfo.Info().getAllInfo();
+                    var bytes = ObjectToByteArray(info);
+                    stream.Write(bytes, 0, bytes.Length);                 
+                }
 
                 Thread.Sleep(100);
+            }
+        }
+
+        private static byte[] ObjectToByteArray(Object obj)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            using (var ms = new MemoryStream())
+            {
+                bf.Serialize(ms, obj);
+                return ms.ToArray();
             }
         }
     }

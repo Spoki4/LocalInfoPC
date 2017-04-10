@@ -101,7 +101,10 @@
       <Project>{2dd28d82-bb01-4eea-bbaa-754852e75f9f}</Project>
       <Name>LocalRadar</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PCInfo\PCInfo.csproj">
+      <Project>{c9d03e3a-d707-4268-ae1e-e61d468a528e}</Project>
+      <Name>PCInfo</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="..\NetworkConstants\NetworkConstants.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

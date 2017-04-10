@@ -61,13 +61,17 @@ namespace LocalRadar
             var receiveCallback = new AsyncCallback((IAsyncResult ar) =>
             {
                 AsyncObject state = (AsyncObject)ar.AsyncState;
-                Console.WriteLine("[{0}] Trying read data from stream");
+                Console.WriteLine("[{0}] Trying read data from stream", state.connection.Client.RemoteEndPoint);
 
                 int readBytes = state.connection.Client.EndReceive(ar);
                 
                 if (readBytes > 0)
                 {
-                    Console.WriteLine("[{0}]Data length = {1} and string = {2}", state.connection.Client.RemoteEndPoint, readBytes, Encoding.ASCII.GetString(state.receiveBuffer));
+                    var command = Encoding.ASCII.GetString(state.receiveBuffer);
+                    Console.WriteLine("[{0}]Data length = {1} and string = {2}", state.connection.Client.RemoteEndPoint, readBytes, command);
+
+                    if (command.Equals(Constants.NETWORK_PING))
+                        findCallback(state.connection);
                 }
             });
             
@@ -93,19 +97,26 @@ namespace LocalRadar
                                     var buffer = Encoding.ASCII.GetBytes(Constants.NETWORK_PING);
                                     tester.Client.Send(buffer);
 
+                                    tester.ReceiveTimeout = 100;
+
                                     state.receiveBuffer = new byte[buffer.Length];
 
                                     tester.Client.BeginReceive(state.receiveBuffer, 0, state.receiveBuffer.Length, 0, receiveCallback, state);
                                 }
+                                else
+                                {
+                                    tester.Close();
+                                    tester = null;
+                                }
                             } catch(SocketException)
                             {
-
+                                tester.Close();
+                                tester = null;
                             }
                         }, state);
                     }
                     catch (Exception)
                     {
-
                     }
 
                     Thread.Sleep(10);
