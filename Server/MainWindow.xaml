@@ -5,25 +5,33 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Server"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Server" Height="600" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
 
-        <ListView Grid.Column="0" Name="listView">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <WrapPanel>
-                        <TextBlock Text="{Binding computerName}"/>
-                    </WrapPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
+        <ListView Grid.Column="0" Name="listView" SelectionChanged="SelectComputer">
         </ListView>
 
-        <Grid Grid.Column="1">
-            
-        </Grid>
+        <StackPanel Grid.Column="1" Margin="10 10">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Название компьютера: " />
+                <TextBlock Text=""  Name="computerNameText"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Название процессора: " />
+                <TextBlock Text=""  Name="processorNameText"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Операционная система: " />
+                <TextBlock Text=""  Name="OSNameText"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Количество оперативной памяти компьютера: " />
+                <TextBlock Text=""  Name="RAMSizeText"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Window>

@@ -19,14 +19,12 @@ namespace LocalRadar
         private volatile bool threadRunning;
 
         private Action<TcpClient> findCallback;
-        private Action endCallback;
 
         private int frequencyTime = 5000;
 
         internal void SetRange(IPRange range) { this.range = range; }
         internal void SetPort(int port) { this.port = port; }
         internal void SetFindCallback(Action<TcpClient> callback) { findCallback = callback; }
-        internal void SetEndCallback(Action callback) { endCallback = callback; }
         internal void SetFrenquency(int millis) { frequencyTime = millis; }
 
         public void Scan()
@@ -58,72 +56,80 @@ namespace LocalRadar
                 }
             }
 
+            foreach (var ip in range.GetIPRange())
+            {
+                if (!threadRunning)
+                    return;
+                try
+                {
+                    testIp(ip);
+                }
+                catch (Exception)
+                {
+
+                }
+                Thread.Sleep(5);
+            }
+            
+        }
+
+        private void testIp(IPAddress ip)
+        {
             var receiveCallback = new AsyncCallback((IAsyncResult ar) =>
             {
-                AsyncObject state = (AsyncObject)ar.AsyncState;
-                Console.WriteLine("[{0}] Trying read data from stream", state.connection.Client.RemoteEndPoint);
+                AsyncObject state1 = (AsyncObject)ar.AsyncState;
+                Console.WriteLine("[{0}] Trying read data from stream", state1.connection.Client.RemoteEndPoint);
 
-                int readBytes = state.connection.Client.EndReceive(ar);
-                
+                int readBytes = state1.connection.Client.EndReceive(ar);
+
                 if (readBytes > 0)
                 {
-                    var command = Encoding.ASCII.GetString(state.receiveBuffer);
-                    Console.WriteLine("[{0}]Data length = {1} and string = {2}", state.connection.Client.RemoteEndPoint, readBytes, command);
+                    var command = Encoding.ASCII.GetString(state1.receiveBuffer);
+                    Console.WriteLine("[{0}]Data length = {1} and string = {2}", state1.connection.Client.RemoteEndPoint, readBytes, command);
 
                     if (command.Equals(Constants.NETWORK_PING))
-                        findCallback(state.connection);
+                        findCallback(state1.connection);
                 }
             });
-            
-            while (threadRunning)
-            {
-                foreach (var ip in range.GetIPRange())
+
+            TcpClient tester = new TcpClient();
+            AsyncObject state = new AsyncObject();
+            state.connection = tester;
+
+            tester.BeginConnect(ip, port, (IAsyncResult ar) => {
+                AsyncObject obj = (AsyncObject)ar.AsyncState;
+                try
                 {
-                    if (!threadRunning)
-                        return;
-                    try
+                    obj.connection.EndConnect(ar);
+
+                    if (obj.connection.Connected)
                     {
-                        TcpClient tester = new TcpClient();
-                        AsyncObject state = new AsyncObject();
-                        state.connection = tester;
+                        Console.WriteLine("Connected to {0}", obj.connection.Client.RemoteEndPoint);
+                        var buffer = Encoding.ASCII.GetBytes(Constants.NETWORK_PING);
+                        tester.Client.BeginSend(buffer, 0, buffer.Length, 0, (IAsyncResult sendAR) =>
+                        {
+                            var socket = (TcpClient)sendAR.AsyncState;
+                            socket.Client.EndSend(sendAR);
 
-                        tester.BeginConnect(ip, port, (IAsyncResult ar) => {
-                            AsyncObject obj = (AsyncObject)ar.AsyncState;
-                            try { 
-                                obj.connection.EndConnect(ar);
+                            state.receiveBuffer = new byte[buffer.Length];
 
-                                if (obj.connection.Connected) {
-                                    Console.WriteLine("Connected to {0}", obj.connection.Client.RemoteEndPoint);
-                                    var buffer = Encoding.ASCII.GetBytes(Constants.NETWORK_PING);
-                                    tester.Client.Send(buffer);
+                            tester.Client.BeginReceive(state.receiveBuffer, 0, state.receiveBuffer.Length, 0, receiveCallback, state);
 
-                                    tester.ReceiveTimeout = 100;
-
-                                    state.receiveBuffer = new byte[buffer.Length];
-
-                                    tester.Client.BeginReceive(state.receiveBuffer, 0, state.receiveBuffer.Length, 0, receiveCallback, state);
-                                }
-                                else
-                                {
-                                    tester.Close();
-                                    tester = null;
-                                }
-                            } catch(SocketException)
-                            {
-                                tester.Close();
-                                tester = null;
-                            }
-                        }, state);
+                        }, tester);
                     }
-                    catch (Exception)
+                    else
                     {
+                        tester.Close();
+                        tester = null;
                     }
-
-                    Thread.Sleep(10);
                 }
-
-                Thread.Sleep(frequencyTime);
-            }
+                catch (SocketException)
+                {
+                    tester.Close();
+                    tester = null;
+                    
+                }
+            }, state);
         }
     }
 

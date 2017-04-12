@@ -55,27 +55,57 @@ namespace Client
             }
         }
 
+        struct ServerInstance
+        {
+            public TcpClient server;
+            public byte[] command;
+        }
+
         private static void WorkWithServer(TcpClient server)
         {
             Console.WriteLine("Server found this client");
-            while(true)
+            server.ReceiveTimeout = 1000;
+            server.SendTimeout = 1000;
+
+            ServerInstance instance = new ServerInstance();
+            instance.server = server;
+            
+
+            var stream = server.GetStream();
+            try { 
+                while(true)
+                {
+                    if (!server.Connected)
+                        break;
+
+                    instance.command = new byte[1024];
+                    stream.BeginRead(instance.command, 0, instance.command.Length, OnRead, instance);
+
+                    Thread.Sleep(100);
+                }
+            } catch (Exception e)
             {
-                if (!server.Connected)
-                    break;
+                Console.WriteLine("Lost connection to the server");
+            }
+        }
 
-                var stream = server.GetStream();
+        private static void OnRead(IAsyncResult ar)
+        {
+            try { 
+                var instance = (ServerInstance)ar.AsyncState;
 
-                if (!stream.DataAvailable)
-                    continue;
+                if (!instance.server.Connected)
+                    return;
 
-                var buffer = new byte[1024];
-                stream.Read(buffer, 0, buffer.Length);
+                var stream = instance.server.GetStream();
 
-                string command = Encoding.ASCII.GetString(buffer);
+                stream.EndRead(ar);
+
+                string command = Encoding.ASCII.GetString(instance.command);
                 command = command.TrimEnd('\0');
                 Console.WriteLine(command);
 
-                if(command.Equals(Constants.NETWORK_PING))
+                if (command.Equals(Constants.NETWORK_PING))
                 {
                     var pingBytes = Encoding.ASCII.GetBytes(Constants.NETWORK_PING);
                     stream.Write(pingBytes, 0, pingBytes.Length);
@@ -84,10 +114,12 @@ namespace Client
                 {
                     var info = new PCInfo.Info().getAllInfo();
                     var bytes = ObjectToByteArray(info);
-                    stream.Write(bytes, 0, bytes.Length);                 
+                    stream.Write(bytes, 0, bytes.Length);
                 }
-
-                Thread.Sleep(100);
+            }
+            catch (Exception e)
+            {
+                
             }
         }
 

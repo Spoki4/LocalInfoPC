@@ -30,12 +30,6 @@ namespace LocalRadar
             return this;
         }
 
-        public RadarBuilder SetEndCallback(Action callback)
-        {
-            radar.SetEndCallback(callback);
-            return this;
-        }
-
         public RadarBuilder SetFrequency(int millis)
         {
             radar.SetFrenquency(millis);

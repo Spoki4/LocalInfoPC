@@ -17,12 +17,15 @@ namespace Server.services
     {
         struct Client
         {
+            public int id;
             public TcpClient socket;
             public byte[] receiveBytes;
             public ComputerInfo lastInfo;
         }
 
-        private volatile List<Client> computers = new List<Client>();
+        private static volatile int counter = 0;
+
+        private List<Client> computers = new List<Client>();
         private Timer refreshTimer;
 
         public Computers()
@@ -33,12 +36,15 @@ namespace Server.services
                 .SetFindCallback((TcpClient socket) =>
                 {
                     foreach (var comp in computers)
-                        if (socket.Equals(comp))
+                        if (socket.Equals(comp)) {
+                            Console.WriteLine("Early founded {0}", socket.Client.RemoteEndPoint);
                             return;
+                        }
 
                     Console.WriteLine("New computer add on address {0}", socket.Client.RemoteEndPoint);
 
                     Client client = new Client();
+                    client.id = counter++;
                     client.socket = socket;
 
                     computers.Insert(0, client);
@@ -58,8 +64,9 @@ namespace Server.services
         public List<ComputerInfo> getInfo()
         {
             List<ComputerInfo> info = new List<ComputerInfo>(computers.Count);
-            foreach (var comp in computers)
+            foreach (var comp in computers) { 
                 info.Add(comp.lastInfo);
+            }
 
             return info;
         }
@@ -67,36 +74,81 @@ namespace Server.services
         private void RefreshData(object sender, ElapsedEventArgs e)
         {
             byte[] getStatsCommand = Encoding.ASCII.GetBytes(Constants.NETWORK_STATS);
-            foreach (var item in computers)
-            {
-                if (!item.socket.Connected)
-                    computers.Remove(item);
-
-                item.socket.Client.BeginSend(getStatsCommand, 0, getStatsCommand.Length, 0, onSend, item);
+            while(true) { 
+                try { 
+                    foreach (var item in computers)
+                    {
+                        if (!item.socket.Connected)
+                            computers.Remove(item);
+                        try
+                        {
+                            item.socket.Client.BeginSend(getStatsCommand, 0, getStatsCommand.Length, 0, OnSend, item);
+                        }
+                        catch (Exception)
+                        {
+                            RemoveClient(item);
+                        }
+                    }
+                    break;
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
             }
         }
 
-        private void onSend(IAsyncResult ar)
+        private void OnSend(IAsyncResult ar)
         {
             Client client = (Client)ar.AsyncState;
+            try { 
+                
 
-            client.socket.Client.EndSend(ar);
+                client.socket.Client.EndSend(ar);
 
-            client.receiveBytes = new byte[1024];
-            client.socket.Client.BeginReceive(client.receiveBytes, 0, client.receiveBytes.Length, 0, OnReceive, client);
+                client.receiveBytes = new byte[1024];
+                client.socket.Client.BeginReceive(client.receiveBytes, 0, client.receiveBytes.Length, 0, OnReceive, client);
+            } catch(Exception)
+            {
+                RemoveClient(client);
+            }
         }
 
         private void OnReceive(IAsyncResult ar)
         {
             Client client = (Client)ar.AsyncState;
+            try {                 
 
-            int bytesReceived = client.socket.Client.EndReceive(ar);
+                int bytesReceived = client.socket.Client.EndReceive(ar);
             
-            if(bytesReceived > 0)
+                if(bytesReceived > 0)
+                {
+                    ComputerInfo info = ByteArrayToObject<ComputerInfo>(client.receiveBytes);
+                    if(info != null) {
+                        client.lastInfo = info;
+                        UpdateClient(client);
+                    }
+
+                }
+            } catch(Exception)
             {
-                ComputerInfo info = ByteArrayToObject<ComputerInfo>(client.receiveBytes);
-                if(info != null)
-                    client.lastInfo = info;
+                RemoveClient(client);
+            }
+        }
+
+        private void RemoveClient(Client client)
+        {
+            computers.Remove(client);
+        }
+
+        private void UpdateClient(Client client)
+        {
+            for (int i = 0; i < computers.Count; i++)
+            {
+                if (computers[i].id == client.id) { 
+                    computers[i] = client;
+                    break;
+                }
             }
         }
 
